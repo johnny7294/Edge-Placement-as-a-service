@@ -1,0 +1,38 @@
+curl -X POST 192.168.122.9:5100/json-example -d '{"inputlist" : [
+{
+  "tid" : "1",
+  "zone" : "Z1",
+  "tipA" : “60.150.100.2/24”,
+  "tipB" : “60.150.100.3/24”,
+  "vpcid" : "1",
+  "vpcipA" : “70.150.100.2/24”,
+  "vpcipB" : "70.150.100.3/24”,
+  "subid" : "1",
+  "subipA" : “172.16.10.2/24”,
+  "subipB" : “172.16.10.3/24”,
+  "sub_br_ipB" : “172.16.20.2/24”,}]
+}' -H 'Content-Type: application/json'
+
+
+
+The above input is only for one tenant, one VPC, one subnet.
+The tenant has to replicate the same format as per his/her requirements.
+
+{ "inputlist" :
+[{
+  "tid":'1',
+  "tipA":'a.a.b.b',  # ip to be assigned to the vethpair connected to T-namespace
+  "tipB":'a.a.b.c',  # ip to be assigned to the vethpair connected to the prov_ns
+  "vpcid":'1',
+  "vpcipA":'q.q.w.w.', # ip to be assigned to the vethpair connected to V-namespace
+  "vpcipB":'q.q.w.e', # ip to be assigned to the vethpair connected to T-namespace
+  "subid":'1',
+  "subipA":'z.z.x.x', # ip to be assigned to the vethpair connected to S-namespace
+  "subipB":'z.z.x.c', # ip to be assigned to the vethpair connected to V-namespace
+  "sub_br_ipB":'out_of_user_subnet', # ip to be assigned to the vethpair connected from bridge to the S-namespace
+  "subnetip":'out_of_user_subnet', # ip to be assigned to the bridge interface
+  "subnetipmask":'255.255.255.0', 
+  "dhcpstart":'out_of_user_subnet',  # starting ip of dhcp range
+  "dhcpend":'out_of_user_subnet', #ending ip of dhcp range
+  "vmname":'user_input'}
+,{},{}......]}

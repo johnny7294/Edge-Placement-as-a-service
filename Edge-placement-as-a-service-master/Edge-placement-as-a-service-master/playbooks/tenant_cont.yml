@@ -1,0 +1,26 @@
+---
+-
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    -
+      command: "docker run  --name T-{{ item.tid }} -itd multilayer_switch_image"
+      #ignore_errors: true
+      name: "Create a tenant container"
+      loop: '{{ inputlist }}'
+
+    - name: Create a vethpair A-B
+      command:  ip link add t-{{ item.tid }}-A type veth peer name t-{{ item.tid }}-B
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }} t-{{ item.tid }}-A {{ item.tipA }}
+      loop: '{{ inputlist }}'
+
+    - name: connect to provider
+      command: python attach_pairs.py provider t-{{ item.tid }}-B {{ item.tipB }}
+      loop: '{{ inputlist }}'
+
+
+
+

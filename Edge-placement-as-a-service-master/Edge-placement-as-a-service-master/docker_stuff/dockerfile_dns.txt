@@ -1,0 +1,69 @@
+FROM ubuntu:bionic-20190612 AS add-apt-repositories
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y gnupg \
+ && apt-key adv --fetch-keys http://www.webmin.com/jcameron-key.asc \
+ && echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get -y install iproute2
+RUN apt-get -y install telnet
+RUN apt-get -y install openssh-server
+RUN apt-get -y install iptables
+RUN apt-get -y install iputils-ping
+RUN apt-get -y install traceroute
+RUN apt-get -y install tcpdump
+RUN apt-get -y install iperf
+RUN apt-get -y install vim
+RUN apt-get -y install python
+RUN apt-get -y install python-pip
+RUN apt-get -y install curl
+RUN apt-get -y install lsb-release
+RUN pip install --upgrade pip
+RUN apt-get -y  install python-pexpect
+RUN pip install paramiko
+RUN apt-get -y  install nano
+RUN apt-get -y  install bridge-utils
+RUN apt-get -y  install apt-transport-https
+RUN apt-get -y install nmap
+#RUN apt-get -y quagga 
+
+RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump
+RUN ln -s /usr/bin/tcpdump /usr/sbin/tcpdump
+#RUN cp /usr/share/doc/quagga/examples/zebra.conf.sample /etc/quagga/zebra.conf
+#RUN cp /usr/share/doc/quagga/examples/bgpd.conf.sample /etc/quagga/bgpd.conf
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+
+#RUN chown quagga:quagga /etc/quagga/*.conf
+#RUN chown quagga:quaggavty /etc/quagga/*.conf
+#RUN chmod 640 /etc/quagga/*.conf
+
+
+FROM ubuntu:bionic-20190612
+
+LABEL maintainer="sameer@damagehead.com"
+
+ENV BIND_USER=bind \
+    BIND_VERSION=9.11.3 \
+    WEBMIN_VERSION=1.9 \
+    DATA_DIR=/data
+
+COPY --from=add-apt-repositories /etc/apt/trusted.gpg /etc/apt/trusted.gpg
+
+COPY --from=add-apt-repositories /etc/apt/sources.list /etc/apt/sources.list
+
+RUN rm -rf /etc/apt/apt.conf.d/docker-gzip-indexes \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      bind9=1:${BIND_VERSION}* bind9-host=1:${BIND_VERSION}* dnsutils \
+      webmin=${WEBMIN_VERSION}* \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /sbin/entrypoint.sh
+
+RUN chmod 755 /sbin/entrypoint.sh
+
+EXPOSE 53/udp 53/tcp 10000/tcp
+
+ENTRYPOINT ["/sbin/entrypoint.sh"]
+
+CMD ["/usr/sbin/named"]

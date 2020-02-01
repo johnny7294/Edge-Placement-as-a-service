@@ -1,0 +1,25 @@
+---
+-
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    -
+      command: "docker run  --name T-{{ item.tid }}VPC-{{ item.vpcid }} -itd multilayer_switch_image"
+      #ignore_errors: true
+      name: "Create a vpc container"
+      loop: '{{ inputlist }}'
+
+    - name: Create a vethpair A-B
+      command:  ip link add vpc-{{ item.vpcid }}-A type veth peer name vpc-{{ item.vpcid }}-B
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }}VPC-{{ item.vpcid }} vpc-{{ item.vpcid }}-A {{ item.vpcipA }}
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }} vpc-{{ item.vpcid }}-B {{ item.vpcipB }}
+      loop: '{{ inputlist }}'
+
+
+

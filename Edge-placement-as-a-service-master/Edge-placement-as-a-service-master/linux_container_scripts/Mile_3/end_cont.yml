@@ -1,0 +1,21 @@
+---
+-
+  gather_facts: false
+  hosts: hypervisor
+  become: true
+  tasks:
+    -
+      command: "docker run --priviliged --name {{ item.name }} -itd booyah"
+      #ignore_errors: true
+      name: "Create a container"
+      loop: "{{ guests }}"
+
+    - name: run python script
+      command: python attach_cont.py {{ item.0.name }} {{ item.1 }} {{ item.0.ip }}
+      with_subelements:
+        - "{{ guests }}"
+        - networks
+
+
+
+

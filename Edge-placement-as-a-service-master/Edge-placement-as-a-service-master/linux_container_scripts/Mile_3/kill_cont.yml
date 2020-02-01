@@ -1,0 +1,18 @@
+---
+-
+  gather_facts: false
+  hosts: localhost
+  become: true
+  tasks:
+    -
+      command: "docker kill {{ item.cont }}"
+      #ignore_errors: true
+      name: "Stop the sub containers"
+      loop: "{{ killlist }}"
+
+    -
+      command: "docker rm {{ item.cont }}"
+      #ignore_errors: true
+      name: "remove the sub containers"
+      loop: "{{ killlist }}"
+~

@@ -1,0 +1,2 @@
+[hypervisor]
+192.168.122.9 ansible_connection=ssh ansible_user=ece792 ansible_ssh_pass=linux2793 ansible_become_pass=linux2793

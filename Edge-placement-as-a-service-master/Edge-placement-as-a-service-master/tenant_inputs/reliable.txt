@@ -1,0 +1,2 @@
+curl -X POST 192.168.122.9:5100/json-example -d '{"reliable" : "YES"
+}' -H 'Content-Type: application/json'

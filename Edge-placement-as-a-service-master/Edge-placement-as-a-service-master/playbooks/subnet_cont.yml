@@ -1,0 +1,57 @@
+---
+-
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    -
+      command: "docker run --name T-{{ item.tid }}VPC-{{ item.vpcid }}SUB-{{ item.subid }} -itd multilayer_switch_image "
+      #ignore_errors: true
+      name: "Create a subnet namespace"
+      loop: '{{ inputlist }}'
+
+    - name: Create a vethpair A-B
+      command:  ip link add sub-{{ item.subid }}-A type veth peer name sub-{{ item.subid }}-B
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }}VPC-{{ item.vpcid }}SUB-{{ item.subid }} sub-{{ item.subid }}-A {{ item.subipA }}
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }}VPC-{{ item.vpcid }} sub-{{ item.subid }}-B {{ item.subipB }}
+      loop: '{{ inputlist }}'
+
+    - name: Create a SUB bridge
+      command: brctl addbr T-{{ item.tid }}VPC-{{ item.vpcid }}SUB-{{ item.subid }}br
+      loop: '{{ inputlist }}'
+
+    - name: Create a bridge vethpair
+      command: ip link add sub_br-{{ item.subid }}-A type veth peer name sub_br-{{ item.subid }}-B
+      loop: '{{ inputlist }}'
+
+    - name: set interface up A
+      command: ip link set sub_br-{{ item.subid }}-A up
+      loop: '{{ inputlist }}'
+
+    - name: attach interface to bridge
+      command: brctl addif T-{{ item.tid }}VPC-{{ item.vpcid }}SUB-{{ item.subid }}br sub_br-{{ item.subid }}-A
+      loop: '{{ inputlist }}'
+
+    - name: run python script
+      command: python attach_pairs.py T-{{ item.tid }}VPC-{{ item.vpcid }}SUB-{{ item.subid }} sub_br-{{ item.subid }}-B {{ item.sub_br_ipB }}
+      loop: '{{ inputlist }}'
+
+    - name: Define the network
+      virt_net:
+        command: define
+        name: 'T-{{ item.tid }}VPC-{{ item.vpcid }}NET-{{ item.subid }}'
+        xml: "{{ lookup('template',  'networktemp1.xml.j2'   ) }}"
+      loop: '{{ inputlist }}'
+
+    - name: Start the Network
+      virt_net:
+        command: create
+        name: 'T-{{ item.tid }}VPC-{{ item.vpcid }}NET-{{ item.subid }}'
+        state: active
+      loop: '{{ inputlist }}'
+  

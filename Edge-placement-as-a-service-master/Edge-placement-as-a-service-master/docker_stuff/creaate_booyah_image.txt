@@ -1,0 +1,5 @@
+#!/bin/bash
+sudo docker build -t <image_name> -f dockerfile.txt .
+
+
+#must be in the same directory as that of the dockerfile

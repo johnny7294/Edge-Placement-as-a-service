@@ -1,0 +1,36 @@
+# playbook to create 2 vms with 2 interfaces, 2 vcpu, 2 GB RAM, 12 GB disk space and 2 applications namely wireshark (tshark) and iperf (iperf3) 
+# VM1 connected to Internet and L2 network
+# VM2 connected to Internet and L2 network
+######
+# USAGE
+#  to create topology as mentioned in the homework, run
+#     sudo ansible-playbook define-topology.yml
+# to create custom topology,
+#     sudo ansible-playbook define-topology.yml -e '{"guests":[ {"name": "VMa", "networks": ["Internet", "L2"]}, { "name": "VMb", "networks": ["L3", "Internet", "L2"]} ]}'
+######
+- hosts: hypervisor
+  gather_facts: no
+
+  tasks:
+    - name: Copy disk image from current directory
+      command: "cp base-image.img /var/lib/libvirt/images/{{ item.name }}.img"
+      with_items: "{{ guests }}"
+   
+    - name: Create the VMs
+      virt:
+        command: define
+        xml: "{{ lookup('template', 'vm_template.xml') }}"
+        autostart: yes
+      with_items: "{{ guests }}"
+    
+    - name: Start the VMs
+      virt:
+        name: "{{ item.name }}"
+        state: running
+      with_items: "{{ guests }}"
+   
+    - name: Attach network
+      command: "virsh attach-interface {{ item.0.name }} network {{ item.1 }}"
+      with_subelements:
+        - "{{ guests }}"
+        - networks

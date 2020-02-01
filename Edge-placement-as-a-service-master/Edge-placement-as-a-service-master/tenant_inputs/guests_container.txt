@@ -1,0 +1,22 @@
+curl -X POST 192.168.122.9:5100/json-example -d '{"guests" : [
+{
+ "name" : "CS",
+ "networks" : ["netA","netB"],
+ "zone" : "Z1",
+ "type" : "E",
+ "IP" : "dasdasdsdasd"
+ "logging" : "YES"
+ "reliable" : "YES"]}
+}' -H 'Content-Type: application/json'
+
+
+1. Name : Vm name
+2. Networks : which networks to connect for vm.
+	netA>> tenant has already created a network with name netA. So, the tenant should have the list of created networks.
+3. Zone : hypervisors
+4. IP : ip of container
+4. Type : For edge device(E)
+5. Logging : YES to enable
+6. Reliable : YES to enable
+
+>>>5,6,7 should be given only for edge device.
